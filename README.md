@@ -2,6 +2,8 @@
 
 LLM 相关课程的中文学习笔记，专业名词保留英文。**每篇笔记都可以独立阅读，不需要对照 PDF。**
 
+每篇笔记约 15–20 分钟读完，结构统一：本讲脉络 → 一句话总结 → 逐个概念讲解（是什么、为什么、怎么做，配公式推导和数值例子）→ 要点回顾 → 自测题（点开看答案）。公式用 LaTeX 书写，在 GitHub 上会直接渲染。
+
 | 课程 | 文件夹 | 内容方向 |
 |---|---|---|
 | Harvard **CS 2680**：Modern AI Systems: Agents and System Optimizations（Juncheng Yang，Fall 2026） | [`cs2680/`](cs2680/) | Agent 的使用与设计、LLM serving、GPU |
