@@ -2,6 +2,7 @@
 
 > Harvard CS 2680：Modern AI Systems: Agents and System Optimizations
 > 本笔记可独立阅读，原始 slides 仅作参考：[`slides/3_agent_use_2.pdf`](../slides/3_agent_use_2.pdf)
+> 预计阅读时间：18–22 分钟。预备知识：Lecture 2（agentic loop、memory、skill / MCP / hook / plugin）。
 
 ## 本讲脉络
 
@@ -716,3 +717,64 @@ Agent 还不完美，你还有很多工作要做。
 | Sandbox vs prompt | OS 级 sandbox：Codex CLI、Copilot CLI、OpenHands 容器 | 权限提示：Claude Code 和大多数其他工具 |
 | Local vs cloud | 本地优先、无遥测：Goose、Nanocoder、gptme | 交给云端：Copilot CLI、Codex、Mistral Vibe 的远程 agent |
 | Maximal vs minimal | 功能齐全：Omp（功能最多）、Claude Code | 只有四个工具：Pi、mini-SWE-agent（约 100 行 Python） |
+
+---
+
+## 9. 要点回顾
+
+1. **Superpowers**：同样的模型和工具，只换一套 skills，agent 就从“直接写代码”变成“澄清 → 设计 → 计划 → TDD → 审查 → 合并”；SessionStart hook 保证 bootstrap skill 在每次启动、clear 和 compaction 之后都被注入
+2. SKILL.md = 元数据（name、description）+ 流程（instructions、checkpoints、references、scripts），还可以写明禁止的动作、审批关卡和后继 skill
+3. **Caveman**：skill 改变模型怎么写（输出更短），本地 proxy 改变模型读到什么（输入被压缩），hook 让模式持续生效，command 给用户控制，MCP 提供压缩统计和原文检索。Hook 不能改写发给 LLM 的请求，所以需要 proxy
+4. 三个扩展维度：parallel agents 增加吞吐（git worktree 让每个 session 有独立的工作目录）、subagents 隔离 context 并控制权限和模型（嵌套 2–3 层最佳）、long-running agent 扩大单次工作的范围
+5. `/goal` 运行到一个可验证的终态为止；`/loop` 按时间间隔重复，直到你停止
+6. Agent teams = lead + teammates + 共享 task list + mailbox，teammates 之间可以直接通信，适合需要讨论的工作，但更贵；dynamic workflow 把计划放在脚本里
+7. 16 个 agent 写 C 编译器：没有 manager agent，靠 Git、lock 文件、进度文档和自动化测试协调
+8. Programming 3.0：人用自然语言表达目标，agent 写程序，生产力更高、不确定性更多。最佳实践分三类：DEFINE（说明假设、指定结果）、CONTROL（提议与执行分开、显式管理 context）、VERIFY（收紧生成—验证循环、多测一层）
+9. 不要指望 agent 是确定性的，要让周围的系统可靠；自主程度要与风险相匹配
+10. Codex 数据：委派的任务越来越大，一个人同时运行多个 agent，人的角色转向规划、委派、监督、审查和集成
+
+---
+
+## 10. 自测题
+
+<details>
+<summary>1. Superpowers 为什么需要 SessionStart hook？它的 matcher 为什么包含 compact？</summary>
+
+安装 skill 只是让它可用，模型不一定会想到去用。Hook 在每个 session 开始时把 bootstrap skill 注入 context，让模型一开始就知道选择 skill 的规则。Compaction 会把旧内容压缩掉，注入的规则可能丢失，所以在 compact 之后要重新注入。
+</details>
+
+<details>
+<summary>2. Caveman 的本地 proxy 和 MCP server 有什么区别？</summary>
+
+Proxy 位于 agent 和模型提供方之间，拦截每一个请求，可以直接改变模型读到的 context（例如压缩日志）。MCP server 位于 agent 旁边，只在被调用时运行，能提供压缩、检索等工具，但不能改变 context 中已有的内容。
+</details>
+
+<details>
+<summary>3. Git worktree 解决了并行 agent 的什么问题？</summary>
+
+同一个仓库可以有多个工作目录，各自检出不同的分支、共享同一份 Git 历史。每个 agent 在自己的目录中工作，编辑互不干扰，不需要 stash，也不需要再 clone 一份仓库。
+</details>
+
+<details>
+<summary>4. 什么情况下不应该把工作交给 subagent？</summary>
+
+需要反复来回交互、多个阶段要共享 context、只是快速的小修改，或者对延迟敏感时。Subagent 从全新的 context 开始，要花时间重新收集信息，也看不到主对话的历史。
+</details>
+
+<details>
+<summary>5. /goal 的目标为什么必须可验证？各举一个好例子和坏例子。</summary>
+
+Evaluator 每次尝试后要检查条件是否成立，决定继续还是停止。好例子：“npm run lint exits with zero errors”“all integration tests pass”。坏例子：“refactor the code”，无法判断什么时候算完成。
+</details>
+
+<details>
+<summary>6. Subagents 和 agent teams 的通信方式有什么不同？</summary>
+
+Subagent 只能把结果返回给调用它的主 agent，彼此之间不通信；agent team 的 teammates 共享一个 task list，并通过各自的 mailbox 直接互相发消息、质疑对方的发现。
+</details>
+
+<details>
+<summary>7. “让 agent 周围的系统变得可靠”有哪些具体做法？</summary>
+
+例如：用验收测试定义“完成”；agent 只提出计划，验证后再执行；频繁运行便宜的检查（测试、lint）；限制权限和预算；在多个指标和可推理的合成负载上测量；让自主程度与风险相匹配。
+</details>

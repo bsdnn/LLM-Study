@@ -2,6 +2,7 @@
 
 > Harvard CS 2680：Modern AI Systems: Agents and System Optimizations（Juncheng Yang，Fall 2026）
 > 本笔记可独立阅读，原始 slides 仅作参考：[`slides/2_agent_use_1.pdf`](../slides/2_agent_use_1.pdf)
+> 预计阅读时间：15–18 分钟。不需要预备知识。
 
 ## 本讲脉络
 
@@ -532,3 +533,62 @@ MCP 发布以来最大的修订：
 - **Stateless core**：不再需要保持 session，任何请求可以落到任何实例上，放在普通负载均衡器后面即可
 - **Routing**：`Mcp-Method` header 让 gateway 无需读取 body 就能路由；list 结果可以带 TTL 缓存
 - **Extensions**：长时间运行的 **Tasks** 和由 server 渲染 UI 的 **MCP Apps** 以扩展形式提供
+
+---
+
+## 6. 要点回顾
+
+1. 一个用户 prompt 会展开成“推理 → 工具执行”交替的长链；**模型只提议，harness 执行**，安全控制点在 harness
+2. 你打字之前 context 里已有 10K+ tokens（system、环境、memory、工具定义、skill / MCP 的简介）；代码库留在磁盘上，按需拉取切片
+3. Permission 位于意图与执行之间：allowed、ask、denied 三种结果，有 Manual、Accept Edits、Bypass、Auto 等模式
+4. 每一步都要重发整个 context：prefix cache 让重复的前缀便宜，但 cache reads 仍是大部分成本；context 快满时 compaction 用摘要替换历史，并重新注入 CLAUDE.md 和 memory
+5. LLM 是无状态的；memory 就是 session 启动时加载的文件。CLAUDE.md 是你写的规则（managed → user → project → local 分层），auto memory 是 Claude 写的笔记（MEMORY.md 索引 + 按需读取的 topic 文件）
+6. CLAUDE.md 只写命令、硬约束和不易推断的事实，每个文件不超过 200 行；过时的 memory 比没有更糟，要像代码一样 review 和修剪
+7. 四种扩展机制各管一件事：Skill 决定怎么做，MCP 提供外部能力，Hook 在生命周期事件上确定性地执行，Plugin 负责打包分发
+8. MCP 的三个 primitive：tools（模型调用）、resources（应用附加）、prompts（用户选择）；连接前问清楚它能读什么、能改什么，永远不要把工具输出当作指令
+
+---
+
+## 7. 自测题
+
+<details>
+<summary>1. 为什么说“一个用户 prompt 不是一次请求”？</summary>
+
+Harness 会反复调用模型：模型提出一个工具调用，harness 执行后把结果放回 context，再调用模型决定下一步。修一个失败的测试可能经历“跑测试 → 搜索 → 读文件 → 编辑 → 再跑测试”等多次推理和工具执行，成本和延迟是所有这些调用的总和。
+</details>
+
+<details>
+<summary>2. 模型请求执行 Bash("rm -rf build/") 时，谁决定是否执行？可能有哪些结果？</summary>
+
+由 harness 的 permission 层决定（根据你选择的模式，可能由你确认，或由一个小模型检查）。结果有三种：allowed（直接执行）、ask（先问你）、denied（什么都不发生）。
+</details>
+
+<details>
+<summary>3. 有了 prefix cache，为什么 context 越长还是越贵？</summary>
+
+每一步都要把整个 context 重新发给模型。命中 cache 的部分虽然按较低的价格计费，但每一步都要再付一次；context 越长、步数越多，累计的 cache read 费用越大，所以 cache reads 往往占了大部分成本。
+</details>
+
+<details>
+<summary>4. CLAUDE.md 与 auto memory 有什么区别？</summary>
+
+CLAUDE.md 由你编写，内容是规则和指令，按 managed / user / project / local 分层，每个 session 全部加载。Auto memory 由 Claude 自己编写，记录你的偏好、纠正和项目背景，每个 session 只加载 MEMORY.md 索引（前 200 行），具体的 topic 文件按需读取。
+</details>
+
+<details>
+<summary>5. “每次编辑后自动运行格式化工具”应该用 skill 还是 hook？为什么？</summary>
+
+用 hook（PostToolUse）。Skill 只是给模型的建议，模型可能忘记或忽略；hook 由 harness 在每次工具调用后确定性地执行，保证一定会发生。
+</details>
+
+<details>
+<summary>6. 为什么 skill 的正文不在 session 开始时全部加载？</summary>
+
+为了节省 context：如果有很多 skill，全部加载会占用大量 token，而大多数 skill 在当前任务中用不到。所以开始时只加载 name 和 description 用于发现，真正用到时才加载正文。
+</details>
+
+<details>
+<summary>7. MCP 的 tools、resources、prompts 分别由谁控制？</summary>
+
+Tools 由模型决定是否调用；resources 由应用（host）决定是否附加到 context；prompts 由用户选择使用（在 Claude Code 中以 slash command 的形式出现）。
+</details>

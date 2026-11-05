@@ -2,6 +2,7 @@
 
 > Harvard CS 2680：Modern AI Systems: Agents and System Optimizations
 > 本笔记可独立阅读，原始 slides 仅作参考：[`slides/4_agent_design_1.pdf`](../slides/4_agent_design_1.pdf)
+> 预计阅读时间：18–22 分钟。预备知识：Lecture 2–3（agentic loop、context、memory）。
 
 ## 本讲脉络
 
@@ -506,3 +507,64 @@ Admission → Offloading → Transformation → Compaction
 | **Reflexion** | 失败之后循环 | Attempt → Evaluate → Critique（反思哪里错了）→ Retry |
 | **Plan-and-execute** | 偏离计划时循环 | Plan → Execute steps → 出现偏差则 Re-plan |
 | **Tree search** | 不循环，一次宽搜索 | 并行探索分支 A、B、C，只保留最好的一个 |
+
+---
+
+## 6. 要点回顾
+
+1. **ReAct**：Thought → Action → Observation 循环；只推理会累积成自信的幻觉，只行动会原地打转；一定要有步数上限
+2. Harness 设计者的工作：写工具定义、组装 context、校验请求并检查权限后执行、处理结果并管理 context
+3. **找代码**：先用 grep / glob（实时、零维护）；名字对不上时用语义索引；debug 时 stack trace、失败测试、git 历史最准；重命名等要跟随引用的编辑用 LSP
+4. **改代码**：整文件重写稳但贵且可能漂移；unified diff 紧凑但行号过时就失败；搜索替换省 token 但需要唯一锚点；AST 编辑不会产生非法语法但语言覆盖有限
+5. **Shell** 最强大也最危险：考虑隔离、可操作的失败信号、输出量、长时间进程和预算
+6. **工具设计**：少而正交、专用而非通用、输出省 token、错误信息会教模型怎么改、默认幂等；专门设计的工具明显优于裸 shell
+7. **Prompt 技巧**按需升级：zero-shot → few-shot → role → CoT → ToT → self-consistency → chaining → meta prompting；换模型就要重新调
+8. **Context 是有限资源**（成本、延迟、注意力都随长度变差）；四种管理手段从无损到有损：admission（入口塑形）、offloading（按需加载）、transformation（去重、mask、滑动窗口）、compaction（LLM 摘要，最后手段）
+9. 五种 context 失败：poisoning、distraction、confusion、clash、drift —— 给失败命名，修复就清楚了
+10. **Agent = Model × Harness**：模型决定上限，harness 决定实际表现；同一个模型换 harness，SWE-bench 解决率可以翻倍
+
+---
+
+## 7. 自测题
+
+<details>
+<summary>1. 为什么说“tool 设计就是 context 设计”？</summary>
+
+工具的输出会直接进入 context，并在之后的每一步被重复发送。输出太长会挤占 context、增加成本、分散注意力；所以截断、分页、摘要、返回有用的错误提示，都是在设计 context。
+</details>
+
+<details>
+<summary>2. 什么时候应该用 LSP 而不是 grep？</summary>
+
+当编辑必须跟随符号的真实引用时，例如重命名函数、修改函数签名。grep 只能按字面匹配，会漏掉用别名 import 的调用、误中同名的不同符号；LSP 查询的是 compiler 的符号图，能准确找到所有引用。
+</details>
+
+<details>
+<summary>3. 搜索替换编辑常见的失败原因是什么？工具应该怎么回应？</summary>
+
+锚点字符串出现了多次（有歧义）、文件已被修改导致锚点过时、空白字符不一致。工具应返回能指导修改的错误，例如“匹配到 3 处，请包含更多上下文使其唯一”，而不只是“invalid argument”。
+</details>
+
+<details>
+<summary>4. 60 个工具的 schema 常驻 context 占 42K tokens，怎么优化？属于哪种手段？</summary>
+
+只保留一个工具索引，按需加载当前需要的几个 schema（progressive tool definition / tool search），降到约 3K tokens，60 个工具仍然都能用。属于 offloading（不需要就不加载）。
+</details>
+
+<details>
+<summary>5. Observation masking 和 compaction 有什么区别？</summary>
+
+Observation masking 直接去掉（或替换为占位符）N 步之前的工具结果，不调用 LLM、可预测、开销小；compaction 让 LLM 把历史写成摘要，能保留更多语义，但有损、不可逆、自身也有成本，还可能丢掉关键细节，是最后的手段。
+</details>
+
+<details>
+<summary>6. 举一个 context drift 的例子。怎么预防？</summary>
+
+任务是修复登录超时的 bug，agent 在调查过程中发现一段代码风格很乱，开始大规模重构，最后忘了真正的目标。预防：把目标和完成标准放在固定的位置（如计划文件、system prompt），compaction 后重新注入，并定期对照目标检查进展。
+</details>
+
+<details>
+<summary>7. SWE-agent 的消融实验说明了什么？</summary>
+
+同一个模型，使用为 agent 专门设计的接口（专门的编辑器、文件查看器等）时解决率最高；只给 shell 或去掉专门的编辑器后明显下降。说明工具和接口的设计对 agent 表现影响很大，不能简单地“只给一个 shell”。
+</details>
