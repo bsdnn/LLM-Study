@@ -9,15 +9,15 @@ Harvard **CS 2680：Modern AI Systems: Agents and System Optimizations**（Junch
 
 | # | 主题 | 笔记 | 核心内容 |
 |---|---|---|---|
-| 2 | Agent From a User's Perspective I：How Claude Code Works | [笔记](notes/02_agent_use_1.md) · [PDF](slides/2_agent_use_1.pdf) | Agentic loop、context 与 memory（CLAUDE.md、auto memory）、Skill / MCP / Hook / Plugin |
-| 3 | Agent From a User's Perspective II：Multi-agent and Best Practice | [笔记](notes/03_agent_use_2.md) · [PDF](slides/3_agent_use_2.pdf) | Superpowers 与 Caveman 案例、parallel agents、subagents、agent teams、`/goal` `/loop`、Software 3.0 |
-| 4 | Agent Design I：Context Management and Tool Design | [笔记](notes/04_agent_design_1.md) · [PDF](slides/4_agent_design_1.pdf) | ReAct、search/edit/execution tools 设计、prompt engineering、context engineering、Agent = Model × Harness |
-| 5 | Agent Design II：Multi-Agent Systems | [笔记](notes/05_agent_design_2.md) · [PDF](slides/5_agent_design_2.pdf) | 八种 multi-agent 架构、task decomposition、agent communication、A2A vs MCP |
-| 6 | Agent Design III：Memory and Reliability | [笔记](notes/06_agent_design_3.md) · [PDF](slides/6_agent_design_3.pdf) | Memory 的写入/组织/存储/检索/遗忘、memory 系统、五类 agent failure 及对策 |
-| 7 | Agent Design IV：Evaluation | [笔记](notes/07_agent_design_4.md) · [PDF](slides/7_agent_design_4.pdf) | pass@k / pass^k、GAIA、WebArena、OSWorld、SWE-bench、τ-bench、Terminal-Bench、data leakage |
-| 8 | Agent Design V：Cost-Effective Agents | [笔记](notes/08_agent_design_5.md) · [PDF](slides/8_agent_design_5.pdf) | 成本分解公式、caching / routing、speculative actions、Monolithic / Modular / Microkernel harness |
-| 9 | LLM Serving Basics I：Introduction to LLM | [笔记](notes/09_llm_serving_basics_1.md) · [PDF](slides/9_llm_serving_basics_1.pdf) | Request 生命周期、prefill vs decode、Transformer、KV cache、GQA、MoE、进阶架构 |
-| 10 | LLM Serving Basics II：Intro to GPUs | [笔记](notes/10_llm_serving_basics_2a.md) · [PDF](slides/10_llm_serving_basics_2a.pdf) | GPU vs CPU、SIMT、roofline model、memory hierarchy、Little's law、Tensor Core、其他加速器 |
+| 2 | Agent From a User's Perspective I：How Claude Code Works | [笔记](cs2680/notes/02_agent_use_1.md) · [PDF](cs2680/slides/2_agent_use_1.pdf) | Agentic loop、context 与 memory（CLAUDE.md、auto memory）、Skill / MCP / Hook / Plugin |
+| 3 | Agent From a User's Perspective II：Multi-agent and Best Practice | [笔记](cs2680/notes/03_agent_use_2.md) · [PDF](cs2680/slides/3_agent_use_2.pdf) | Superpowers 与 Caveman 案例、parallel agents、subagents、agent teams、`/goal` `/loop`、Software 3.0 |
+| 4 | Agent Design I：Context Management and Tool Design | [笔记](cs2680/notes/04_agent_design_1.md) · [PDF](cs2680/slides/4_agent_design_1.pdf) | ReAct、search/edit/execution tools 设计、prompt engineering、context engineering、Agent = Model × Harness |
+| 5 | Agent Design II：Multi-Agent Systems | [笔记](cs2680/notes/05_agent_design_2.md) · [PDF](cs2680/slides/5_agent_design_2.pdf) | 八种 multi-agent 架构、task decomposition、agent communication、A2A vs MCP |
+| 6 | Agent Design III：Memory and Reliability | [笔记](cs2680/notes/06_agent_design_3.md) · [PDF](cs2680/slides/6_agent_design_3.pdf) | Memory 的写入/组织/存储/检索/遗忘、memory 系统、五类 agent failure 及对策 |
+| 7 | Agent Design IV：Evaluation | [笔记](cs2680/notes/07_agent_design_4.md) · [PDF](cs2680/slides/7_agent_design_4.pdf) | pass@k / pass^k、GAIA、WebArena、OSWorld、SWE-bench、τ-bench、Terminal-Bench、data leakage |
+| 8 | Agent Design V：Cost-Effective Agents | [笔记](cs2680/notes/08_agent_design_5.md) · [PDF](cs2680/slides/8_agent_design_5.pdf) | 成本分解公式、caching / routing、speculative actions、Monolithic / Modular / Microkernel harness |
+| 9 | LLM Serving Basics I：Introduction to LLM | [笔记](cs2680/notes/09_llm_serving_basics_1.md) · [PDF](cs2680/slides/9_llm_serving_basics_1.pdf) | Request 生命周期、prefill vs decode、Transformer、KV cache、GQA、MoE、进阶架构 |
+| 10 | LLM Serving Basics II：Intro to GPUs | [笔记](cs2680/notes/10_llm_serving_basics_2a.md) · [PDF](cs2680/slides/10_llm_serving_basics_2a.pdf) | GPU vs CPU、SIMT、roofline model、memory hierarchy、Little's law、Tensor Core、其他加速器 |
 
 ## 核心概念速查
 
