@@ -1,11 +1,33 @@
 # LLM-Study
 
-Harvard **CS 2680：Modern AI Systems: Agents and System Optimizations**（Juncheng Yang，Fall 2026）的学习笔记。
+LLM 相关课程的中文学习笔记，专业名词保留英文。**每篇笔记都可以独立阅读，不需要对照 PDF。**
 
-- `notes/`：中文知识笔记，专业名词保留英文。**每篇都可以独立阅读，不需要对照 PDF。**
-- `slides/`：原始课程 slides（PDF），仅供参考。
+| 课程 | 文件夹 | 内容方向 |
+|---|---|---|
+| Harvard **CS 2680**：Modern AI Systems: Agents and System Optimizations（Juncheng Yang，Fall 2026） | [`cs2680/`](cs2680/) | Agent 的使用与设计、LLM serving、GPU |
+| Stanford **CME 295**：Transformers & Large Language Models（Afshine & Shervine Amidi，Fall 2025） | [`cme295/`](cme295/) | Transformer 原理、LLM 训练与调优、推理模型、RAG 与 agents、评估 |
 
-## 目录
+每个课程文件夹下：
+- `notes/`：中文知识笔记
+- `slides/`：原始课程 slides（PDF），仅供参考
+
+## CME 295：Transformers & Large Language Models
+
+建议先读这门课打基础（Transformer 原理 → 训练 → 应用），再读 CS 2680 的 agent 与系统部分。
+
+| # | 主题 | 笔记 | 核心内容 |
+|---|---|---|---|
+| 1 | NLP 基础与 Transformer 架构 | [笔记](cme295/notes/01_transformer.md) · [PDF](cme295/slides/fall25-cme295-lecture1.pdf) | NLP 任务与指标、tokenization、Word2vec、RNN/LSTM、self-attention（Q/K/V）、encoder-decoder、端到端翻译例子 |
+| 2 | Transformer 改进技巧与 BERT | [笔记](cme295/notes/02_transformer_variants_bert.md) · [PDF](cme295/slides/fall25-cme295-lecture2.pdf) | Sinusoidal / ALiBi / RoPE、Pre-Norm 与 RMSNorm、sliding window、MQA/GQA、三类 Transformer 模型、BERT（MLM、NSP、fine-tuning）、DistilBERT、RoBERTa |
+| 3 | LLM 概览：MoE、解码、Prompting 与推理优化 | [笔记](cme295/notes/03_llm_overview.md) · [PDF](cme295/slides/fall25-cme295-lecture3.pdf) | MoE 与 routing collapse、greedy / beam / top-k / top-p / temperature、guided decoding、ICL、CoT、self-consistency、KV cache、PagedAttention、MLA、speculative decoding、MTP |
+| 4 | LLM 训练：Pretraining、训练优化、SFT 与 LoRA | [笔记](cme295/notes/04_training.md) · [PDF](cme295/slides/fall25-cme295-lecture4.pdf) | Scaling laws、Chinchilla、Adam 与显存、ZeRO、TP/PP/SP/CP/EP、FlashAttention、混合精度、instruction tuning、Chatbot Arena、LoRA、QLoRA |
+| 5 | Preference Tuning：RLHF、PPO 与 DPO | [笔记](cme295/notes/05_preference_tuning.md) · [PDF](cme295/slides/fall25-cme295-lecture5.pdf) | 偏好数据、Bradley-Terry reward model、PPO（advantage、clip、KL）、GRPO、Best-of-N、DPO 及其推导 |
+| 6 | Reasoning Models：用 RL 扩展推理能力 | [笔记](cme295/notes/06_reasoning_models.md) · [PDF](cme295/slides/fall25-cme295-lecture6.pdf) | pass@k / cons@k、verifiable rewards、test-time scaling、GRPO vs PPO、长度偏差（DAPO、Dr. GRPO）、DeepSeek R1-Zero 与 R1、distillation |
+| 7 | RAG、Tool Calling 与 Agents | [笔记](cme295/notes/07_rag_tools_agents.md) · [PDF](cme295/slides/fall25-cme295-lecture7.pdf) | Chunking、bi-encoder / BM25 / hybrid、HyDE、contextual retrieval、cross-encoder 重排序、NDCG / MRR、tool calling、MCP、ReAct、A2A、agent 安全 |
+| 8 | LLM 评估 | [笔记](cme295/notes/08_evaluation.md) · [PDF](cme295/slides/fall25-cme295-lecture8.pdf) | Cohen's Kappa、BLEU / ROUGE / METEOR、LLM-as-a-Judge 与三种 bias、factuality、agent 失败模式、MMLU / AIME / PIQA / SWE-bench / HarmBench / τ-bench、pass^k、数据污染 |
+| 9 | 超越文本 Transformer：ViT、VLM、Diffusion LLM 与展望 | [笔记](cme295/notes/09_beyond_transformers.md) · [PDF](cme295/slides/fall25-cme295-lecture9.pdf) | ViT、VLM 两种架构、DDPM、masked diffusion LLM（LLaDA）、模态间借鉴、model collapse、注意力硬件、未解决的挑战 |
+
+## CS 2680：Modern AI Systems: Agents and System Optimizations
 
 | # | 主题 | 笔记 | 核心内容 |
 |---|---|---|---|
@@ -46,3 +68,20 @@ Harvard **CS 2680：Modern AI Systems: Agents and System Optimizations**（Junch
 | **Roofline model** | 用 arithmetic intensity 判断 kernel 受限于带宽还是算力的模型 |
 | **Warp / SIMT** | 32 个线程组成一个 warp，同一条指令驱动 32 个线程执行 |
 | **Tensor Core** | GPU 上专门做小矩阵乘加的单元，承担 LLM 99% 以上的 FLOPs |
+| **Tokenization / BPE** | 把文本切成 token；BPE 从字符开始反复合并最常见的相邻对，得到 subword 词表 |
+| **Self-attention** | softmax(QKᵀ/√d_k)·V：每个 token 用 query 与所有 key 比较，按权重汇总 values |
+| **RoPE** | 按位置旋转 Q、K 向量，使 attention 分数只依赖相对距离；当前位置编码的默认选择 |
+| **Pre-Norm / RMSNorm** | 在子层之前做归一化（训练更稳），RMSNorm 只按均方根缩放（更便宜） |
+| **BERT** | Encoder-only 模型，用 MLM 和 NSP 预训练，再针对下游分类任务 fine-tune |
+| **Scaling laws / Chinchilla** | Loss 随参数、数据、算力按幂律下降；算力最优时约每个参数 20 个训练 tokens |
+| **FlashAttention** | 分块在 SRAM 中计算 attention、不把 n×n 矩阵写回显存的精确算法 |
+| **SFT / Instruction tuning** | 用期望的输入/输出对微调模型，使其成为遵循指令的助手 |
+| **LoRA / QLoRA** | 冻结原权重，只训练低秩矩阵 B·A；QLoRA 再把冻结权重量化到 4-bit |
+| **RLHF** | 先用人类偏好训练 reward model，再用 RL（如 PPO）优化模型，同时用 KL 限制偏离 |
+| **DPO** | 把 RLHF 目标改写成直接在偏好对上训练的监督 loss，不需要 reward model 和 RL |
+| **GRPO** | 用同一问题的一组回答的平均 reward 作为 baseline，省掉 value model 的 RL 算法 |
+| **Reasoning model** | 先生成长推理链再回答的模型，通常用 verifiable rewards 的 RL 训练 |
+| **RAG** | 先从知识库检索相关片段，加入 prompt，再让 LLM 生成回答 |
+| **LLM-as-a-Judge** | 用 LLM 按评分准则给回答打分并给出理由；要注意位置、长度、自我偏好等 bias |
+| **ViT** | 把图像切成 patch 当作 token，用 Transformer encoder 做图像理解 |
+| **Diffusion LLM** | 从全是 `[MASK]` 的序列出发，并行地多步“揭开” token 的非自回归生成方式 |
